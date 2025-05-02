@@ -1,0 +1,17 @@
+# Dockerfile.test
+
+FROM python:3.10.16-slim 
+
+WORKDIR /app
+
+# Copy requirements files
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code and test code
+COPY . .
+
+# Set the command to run tests when the container starts
+CMD ["pytest"]

@@ -1,0 +1,95 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+.env
+python*/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Model checkpoints and large files
+*.h5
+*.keras
+*.model
+*.weights
+*.pb
+models/*/*.keras
+models/*/checkpoint*
+models/*/*_model_*
+checkpoints/
+checkpoint_*.json
+
+# Exception for the deployment model
+!flask/best_model.keras
+!flask/classes.txt
+
+# Raw data - exclude to save space on GitHub
+BrainTumorClassification/data/raw/
+BrainTumorClassification/data/*.npy
+BrainTumorClassification/data/processed/*.npy
+BrainTumorClassification/data/augmented/*.npy
+
+# Logs
+logs/
+*.log
+training_logs/
+
+# Google Cloud credentials
+*.json
+!requirements.json
+!package.json
+
+# Docker
+.dockerignore
+.docker/
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Test coverage
+.coverage
+htmlcov/
+coverage/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# repomix
+repomix-*.*

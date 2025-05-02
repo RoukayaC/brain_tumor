@@ -1,0 +1,24 @@
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: brain-tumor-api-service # Name for the Service object
+  # Namespace will be applied dynamically from deployment workflow
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}' # Enables Network Endpoint Groups for better GCP integration
+    cloud.google.com/app-protocols: '{"http":"HTTP"}' # Specify protocol for better integration
+spec:
+  type: LoadBalancer # Creates a Google Cloud Load Balancer with an external IP
+  # Alternative types (commented out):
+  # type: ClusterIP - Exposes only within the cluster
+  # type: NodePort - Exposes on each node's IP (less common for prod)
+  selector:
+    app: brain-tumor-api # Route traffic to pods with this label
+    env: prod # Environment label to match with deployment
+  ports:
+  - protocol: TCP
+    port: 80 # Port the Load Balancer listens on (standard HTTP)
+    targetPort: 8080 # Port on the Pods/Containers to forward traffic to
+    name: http # Naming the port for better clarity
+  sessionAffinity: ClientIP # Helps maintain session persistence
+  externalTrafficPolicy: Local # Preserves client source IPs and avoids extra hops

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Brain Tumor Prediction</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <style>
+      /* Basic inline styles if not using separate CSS */
+      body {
+        font-family: sans-serif;
+        margin: 2em;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        padding: 1em;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      .alert {
+        padding: 0.75em;
+        margin-bottom: 1em;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+      }
+      .alert-success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+      }
+      .alert-warning {
+        color: #856404;
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+      }
+      .alert-error {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+      }
+      .prediction-result {
+        margin-top: 1.5em;
+        padding: 1em;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+      }
+      .prediction-result img {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 1em;
+      }
+      .probabilities {
+        margin-top: 0.5em;
+        font-size: 0.9em;
+      }
+      .probabilities ul {
+        list-style: none;
+        padding: 0;
+      }
+      .probabilities li {
+        margin-bottom: 0.3em;
+      }
+      .sample-images {
+        display: flex;
+        gap: 1em;
+        margin-top: 1em;
+        margin-bottom: 2em;
+      }
+      .sample-images img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .sample-images img:hover {
+        border-color: #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Brain Tumor MRI Classification</h1>
+
+      {% if not model_ready %}
+      <div class="alert alert-error">
+        Model is not loaded or ready. Please check server logs.
+      </div>
+      {% endif %} {% with messages = get_flashed_messages(with_categories=true)
+      %} {% if messages %} {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <h2>Upload MRI Image</h2>
+      <form
+        method="post"
+        action="{{ url_for('predict_form') }}"
+        enctype="multipart/form-data"
+      >
+        <input
+          type="file"
+          name="image_file"
+          accept=".png, .jpg, .jpeg"
+          required
+        />
+        <button type="submit" {% if not model_ready %}disabled{% endif %}>
+          Predict
+        </button>
+      </form>
+
+      <h2>Or Select a Sample Image</h2>
+      <div class="sample-images">
+        <a href="{{ url_for('predict_sample', filename='glioma_sample.jpg') }}">
+          <img
+            src="{{ url_for('static', filename='samples/glioma_sample.jpg') }}"
+            alt="Glioma Sample"
+            title="Predict Glioma Sample"
+          />
+        </a>
+        <a
+          href="{{ url_for('predict_sample', filename='meningioma_sample.jpg') }}"
+        >
+          <img
+            src="{{ url_for('static', filename='samples/meningioma_sample.jpg') }}"
+            alt="Meningioma Sample"
+            title="Predict Meningioma Sample"
+          />
+        </a>
+        <a
+          href="{{ url_for('predict_sample', filename='notumor_sample.jpg') }}"
+        >
+          <img
+            src="{{ url_for('static', filename='samples/notumor_sample.jpg') }}"
+            alt="No Tumor Sample"
+            title="Predict No Tumor Sample"
+          />
+        </a>
+        <a
+          href="{{ url_for('predict_sample', filename='pituitary_sample.jpg') }}"
+        >
+          <img
+            src="{{ url_for('static', filename='samples/pituitary_sample.jpg') }}"
+            alt="Pituitary Sample"
+            title="Predict Pituitary Sample"
+          />
+        </a>
+      </div>
+
+      {% if prediction %}
+      <div class="prediction-result">
+        <h2>Prediction Result</h2>
+        {% if image_data %}
+        <img src="data:image/jpeg;base64,{{ image_data }}" alt="Uploaded MRI" />
+        {% endif %}
+        <p>
+          <strong>Predicted Class:</strong> {{ prediction.predicted_class }}
+        </p>
+        <p>
+          <strong>Confidence:</strong> {{ "%.4f"|format(prediction.confidence)
+          }}
+        </p>
+        <div class="probabilities">
+          <strong>Probabilities:</strong>
+          <ul>
+            {% for class_name, prob in
+            prediction.probabilities.items()|sort(attribute='1', reverse=True)
+            %}
+            <li>{{ class_name }}: {{ "%.4f"|format(prob) }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>

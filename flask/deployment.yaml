@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brain-tumor-api-deployment # Name for the Deployment object
+  namespace: prod                 # Deploy into the 'prod' namespace (workflow applies with -n)
+  labels:                         # Labels for the Deployment itself
+    app: brain-tumor-api
+    env: prod
+spec:
+  replicas: 2                     # Number of pod instances
+  selector:
+    matchLabels:                  # Selects pods managed by this deployment
+      app: brain-tumor-api
+      env: prod                   # Ensure this label matches the template's label
+  strategy:
+    type: RollingUpdate           # Use RollingUpdate for zero downtime deployments
+  template:                       # Blueprint for the pods
+    metadata:
+      labels:                     # Labels applied to each pod
+        app: brain-tumor-api
+        env: prod                 # Label indicating the environment
+    spec:
+      # --- Define Containers within the Pod ---
+      containers:
+
+      # --- Main Application Container ---
+      - name: brain-tumor-api-container
+        # IMPORTANT: The CI/CD workflow will replace the placeholder below
+        image: ${PROD_IMAGE_URI} 
+        ports:
+        - containerPort: 8080     # Port the Flask app listens on
+        
+        # --- Resource Management ---
+        resources:
+          requests:               # Minimum guaranteed resources
+            memory: "1Gi"         # Adjust based on testing (model loading!)
+            cpu: "500m"           # 0.5 vCPU core
+          limits:                 # Maximum resources allowed
+            memory: "2Gi"
+            cpu: "1"              # 1 vCPU core
+        
+        # --- Environment Variables ---
+        env:
+        - name: PORT
+          value: "8080"
+        - name: LOG_LEVEL         # Example for app logging config
+          value: "INFO"
+        - name: GCS_BUCKET_NAME   # Bucket for the model file
+          # IMPORTANT: The CI/CD workflow will replace the placeholder value below
+          value: "YOUR_GCS_BUCKET_NAME_PLACEHOLDER" 
+        - name: FLASK_SECRET_KEY # The env var your app reads
+          valueFrom:
+            secretKeyRef:
+              name: flask-app-secrets # Name of the K8s Secret object
+              key: FLASK_SECRET_KEY  # Key within the K8s Secret to use
+        # --- Health Checks ---
+        readinessProbe:           # Is the app ready to accept traffic?
+          httpGet:
+            path: /               # Use the health check endpoint
+            port: 8080
+          initialDelaySeconds: 45 # Increase delay to allow model download/load
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:            # Is the app still alive?
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 90 # Increase delay
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3

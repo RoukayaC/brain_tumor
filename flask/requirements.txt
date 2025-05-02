@@ -1,0 +1,8 @@
+Flask>=2.0
+tensorflow==2.10.* # Match the version used in your notebook (<2.11)
+numpy<2.0         # Match the version used in your notebook
+Pillow            # For image processing
+gunicorn
+pytest>=6.0
+requests>=2.0 
+google-cloud-storage>=2.0
